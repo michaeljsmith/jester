@@ -1,0 +1,8 @@
+#!/bin/sh
+
+python -3 jester.py 2>&1 | sed -e '/^  File/{s/  File \"\(.*\)\", line \([0-9]*\).*/\1|\2| /;N;s/\n//;}'
+RETVAL=${PIPESTATUS[0]}
+if [ $RETVAL != 0 ]
+then
+  exit
+fi
