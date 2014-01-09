@@ -22,6 +22,15 @@ class Bindings(object):
     else:
       return lookup(bindings[2], sym)
 
+  @staticmethod
+  def bindingsFromModule(mod):
+    # TODO: Do in more functional way.
+    bindings = []
+    for k, v in ((k, v) for k, v in vars(mod).items() if not k.startswith('__')):
+      bindings = k, v, bindings
+
+    return bindings
+
 class Environment(object):
   # TODO: Replace with immutable tree-based implementation.
 
@@ -31,11 +40,41 @@ class Environment(object):
   def lookup(self, sym):
     return Bindings.lookup(self.bindings_, sym)
 
+  @staticmethod
+  def fromModule(mod):
+    return Environment(Bindings.bindingsFromModule(mod))
+
+class TypedObject(object):
+  def __init__(self, type_, obj_):
+    self.type_ = type_
+    self.obj_ = obj_
+
+  def type(self):
+    return self.type_
+
+  def object(self):
+    return self.obj_
+
+class Type(object):
+  def __init__(self, name):
+    self.name = name
+
+class Types(object):
+  def __type(type_):
+    return Type(type_.__name__)
+
+  @__type
+  class app: pass
+
+class App(object):
+  def run(self):
+    print('running app')
+
 class BuiltinDefs(object):
 
   dummyApp = TypedObject(Types.app, App())
 
-builtinEnv = Environment([])
+builtinEnv = Environment.fromModule(BuiltinDefs)
 
 def isSymbol(expr):
   return type(expr) == str
@@ -59,7 +98,10 @@ def app():
 def main():
   with ObjectScope():
     app_ = evaluate(builtinEnv, app())
-    app_.run()
+    if app_.type() != Types.app:
+      asdf
+    else:
+      app_.object().run()
 
 if __name__ == '__main__':
   main()
