@@ -59,24 +59,60 @@ class TypedObject(object):
   def object(self):
     return self.obj_
 
-class Type(object):
-  def __init__(self, name):
-    self.name = name
-
 class Types(object):
+  nextId = 100
+
+  @staticmethod
+  def newType(stem):
+    id = Types.nextId
+    Types.nextId += 1
+    name = stem + str(id)
+    return name
+
+class Expected(object):
+  def __init__(self, type_):
+    self.type_ = type_
+
+class Patterns(object):
+  
+  @staticmethod
+  def unify(pattern, type_):
+    if Patterns.isForm(pattern):
+      return Patterns.unifyForm(pattern, type_)
+    elif Patterns.isExpectation(pattern):
+      return Patterns.unifyExpectation(pattern, type_)
+    else:
+      asdf
+
+  @staticmethod
+  def isForm(pattern):
+    return type(pattern) == list
+
+  @staticmethod
+  def isExpectation(pattern):
+    return type(pattern) == Expected
+
+  @staticmethod
+  def unifyExpectation(pattern, type_):
+    if pattern.type_ == type_:
+      return []
+    else:
+      return None
+
+class TypeDefs(object):
   def __type(type_):
-    return Type(type_.__name__)
+    return Types.newType(type_.__name__)
 
   @__type
   class app: pass
 
 class App(object):
   def run(self):
-    print('running app')
+    pass
 
 class BuiltinDefs(object):
 
-  dummyApp = TypedObject(Types.app, App())
+  dummyApp = TypedObject(TypeDefs.app, App())
 
 builtinEnv = Environment.fromModule(BuiltinDefs)
 
@@ -99,20 +135,31 @@ def app():
   e = Edsl
   return e.dummyApp
 
-class TestEvaluation(unittest.TestCase):
+class UnificationTests(unittest.TestCase):
+  def testUnifySimpleTypeSucceeds(self):
+    type_ = Types.newType('Foo')
+    bindings = Patterns.unify(Expected(type_), type_)
+    self.assertEquals(bindings, [])
 
-    def setUp(self):
-      pass
+  def testUnifySimpleTypeFails(self):
+    expectedType = Types.newType('Foo')
+    actualType = Types.newType('Bar')
+    bindings = Patterns.unify(Expected(expectedType), actualType)
+    self.assertEquals(bindings, None)
 
-    def testEvaluateAndRunApp(self):
-      #self.assertRaises(TypeError, random.shuffle, (1,2,3))
+class EvaluationTests(unittest.TestCase):
 
-      with ObjectScope():
-        app_ = evaluate(builtinEnv, app())
-        if app_.type() != Types.app:
-          asdf
-        else:
-          app_.object().run()
+  def setUp(self):
+    pass
+
+  def testEvaluateAndRunApp(self):
+
+    with ObjectScope():
+      app_ = evaluate(builtinEnv, app())
+      if app_.type() != TypeDefs.app:
+        asdf
+      else:
+        app_.object().run()
 
 if __name__ == '__main__':
     unittest.main()
