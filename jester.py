@@ -1,8 +1,12 @@
+import unittest
+
 def beginObject():
-  print('beginning object')
+  #print('beginning object')
+  pass
 
 def endObject():
-  print('ending object')
+  #print('ending object')
+  pass
 
 class ObjectScope(object):
   def __enter__(self):
@@ -95,13 +99,21 @@ def app():
   e = Edsl
   return e.dummyApp
 
-def main():
-  with ObjectScope():
-    app_ = evaluate(builtinEnv, app())
-    if app_.type() != Types.app:
-      asdf
-    else:
-      app_.object().run()
+class TestEvaluation(unittest.TestCase):
+
+    def setUp(self):
+      pass
+
+    def testEvaluateAndRunApp(self):
+      #self.assertRaises(TypeError, random.shuffle, (1,2,3))
+
+      with ObjectScope():
+        app_ = evaluate(builtinEnv, app())
+        if app_.type() != Types.app:
+          asdf
+        else:
+          app_.object().run()
 
 if __name__ == '__main__':
-  main()
+    unittest.main()
+
