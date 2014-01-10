@@ -73,6 +73,15 @@ class Expected(object):
   def __init__(self, type_):
     self.type_ = type_
 
+class Universal(object):
+  def __init__(self, vars_, body):
+    self.vars = vars_
+    self.body = body
+
+class Reference(object):
+  def __init__(self, name):
+    self.name = name
+
 class Patterns(object):
   
   @staticmethod
@@ -81,6 +90,8 @@ class Patterns(object):
       return Patterns.unifyForm(pattern, type_)
     elif Patterns.isExpectation(pattern):
       return Patterns.unifyExpectation(pattern, type_)
+    elif Patterns.isReference(pattern):
+      return Patterns.unifyReference(pattern, type_)
     else:
       asdf
 
@@ -93,11 +104,19 @@ class Patterns(object):
     return type(pattern) == Expected
 
   @staticmethod
+  def isReference(pattern):
+    return type(pattern) == Reference
+
+  @staticmethod
   def unifyExpectation(pattern, type_):
     if pattern.type_ == type_:
       return []
     else:
       return None
+
+  @staticmethod
+  def unifyReference(pattern, type_):
+    return [pattern.name, type_]
 
 class TypeDefs(object):
   def __type(type_):
@@ -146,6 +165,11 @@ class UnificationTests(unittest.TestCase):
     actualType = Types.newType('Bar')
     bindings = Patterns.unify(Expected(expectedType), actualType)
     self.assertEquals(bindings, None)
+
+  def testUnifyVarSucceeds(self):
+    type_ = Types.newType('Foo')
+    bindings = Patterns.unify(Universal(['T'], Reference(['T'])), type_)
+    self.assertEquals(bindings, [('T', type_)])
 
 class EvaluationTests(unittest.TestCase):
 
