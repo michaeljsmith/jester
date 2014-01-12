@@ -63,11 +63,45 @@ class Types(object):
   nextId = 100
 
   @staticmethod
-  def newType(stem):
+  def newFinite(stem):
     id = Types.nextId
     Types.nextId += 1
     name = stem + str(id)
     return name
+
+  @staticmethod
+  def match(expected, actual):
+    if Types.isForm(expected):
+      return Types.matchForm(expected, actual)
+    elif Types.isExpectation(expected):
+      return Types.matchExpectation(expected, actual)
+    elif Types.isReference(expected):
+      return Types.matchReference(expected, actual)
+    else:
+      asdf
+
+  @staticmethod
+  def isForm(expected):
+    return type(expected) == list
+
+  @staticmethod
+  def isExpectation(expected):
+    return type(expected) == Expected
+
+  @staticmethod
+  def isReference(expected):
+    return type(expected) == Reference
+
+  @staticmethod
+  def matchExpectation(expected, actual):
+    if expected.actual == actual:
+      return []
+    else:
+      return None
+
+  @staticmethod
+  def matchReference(expected, actual):
+    return [expected.name, actual]
 
 class Expected(object):
   def __init__(self, type_):
@@ -82,45 +116,9 @@ class Reference(object):
   def __init__(self, name):
     self.name = name
 
-class Patterns(object):
-  
-  @staticmethod
-  def unify(pattern, type_):
-    if Patterns.isForm(pattern):
-      return Patterns.unifyForm(pattern, type_)
-    elif Patterns.isExpectation(pattern):
-      return Patterns.unifyExpectation(pattern, type_)
-    elif Patterns.isReference(pattern):
-      return Patterns.unifyReference(pattern, type_)
-    else:
-      asdf
-
-  @staticmethod
-  def isForm(pattern):
-    return type(pattern) == list
-
-  @staticmethod
-  def isExpectation(pattern):
-    return type(pattern) == Expected
-
-  @staticmethod
-  def isReference(pattern):
-    return type(pattern) == Reference
-
-  @staticmethod
-  def unifyExpectation(pattern, type_):
-    if pattern.type_ == type_:
-      return []
-    else:
-      return None
-
-  @staticmethod
-  def unifyReference(pattern, type_):
-    return [pattern.name, type_]
-
 class TypeDefs(object):
   def __type(type_):
-    return Types.newType(type_.__name__)
+    return Types.newFinite(type_.__name__)
 
   @__type
   class app: pass
@@ -156,19 +154,19 @@ def app():
 
 class UnificationTests(unittest.TestCase):
   def testUnifySimpleTypeSucceeds(self):
-    type_ = Types.newType('Foo')
-    bindings = Patterns.unify(Expected(type_), type_)
+    type_ = Types.newFinite('Foo')
+    bindings = Types.match(Expected(type_), type_)
     self.assertEquals(bindings, [])
 
   def testUnifySimpleTypeFails(self):
-    expectedType = Types.newType('Foo')
-    actualType = Types.newType('Bar')
-    bindings = Patterns.unify(Expected(expectedType), actualType)
+    expectedType = Types.newFinite('Foo')
+    actualType = Types.newFinite('Bar')
+    bindings = Types.match(Expected(expectedType), actualType)
     self.assertEquals(bindings, None)
 
   def testUnifyVarSucceeds(self):
-    type_ = Types.newType('Foo')
-    bindings = Patterns.unify(Universal(['T'], Reference(['T'])), type_)
+    type_ = Types.newFinite('Foo')
+    bindings = Types.match(Universal(['T'], Reference(['T'])), type_)
     self.assertEquals(bindings, [('T', type_)])
 
 class EvaluationTests(unittest.TestCase):
