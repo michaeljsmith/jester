@@ -24,7 +24,11 @@ class Bindings(object):
     elif bindings[0] == sym:
       return bindings[1]
     else:
-      return lookup(bindings[2], sym)
+      return Bindings.lookup(bindings[2], sym)
+
+  @staticmethod
+  def bind(bindings, sym, val):
+    return sym, val, bindings
 
   @staticmethod
   def bindingsFromModule(mod):
@@ -43,6 +47,9 @@ class Environment(object):
 
   def lookup(self, sym):
     return Bindings.lookup(self.bindings_, sym)
+
+  def bind(self, symbol, value):
+    return Environment(Bindings.bind(self.bindings_, symbol, value))
 
   @staticmethod
   def fromModule(mod):
@@ -162,14 +169,27 @@ class MatchTests(unittest.TestCase):
     self.assertEquals(bindings, [('T', type_)])
 
 class EnvironmentTests(unittest.TestCase):
-  def testSimpleLookup(self):
 
+  def setUp(self):
     fooType = Types.newFinite('Foo')
     class TestDefs(object):
       foo = TypedObject(fooType, 'fooVal')
+    self.foo = TestDefs.foo
+    self.testEnv = Environment.fromModule(TestDefs)
 
-    testEnv = Environment.fromModule(TestDefs)
-    self.assertEquals(testEnv.lookup('foo'), TestDefs.foo)
+  def testSimpleLookupSucceeds(self):
+    self.assertEquals(self.testEnv.lookup('foo'), self.foo)
+
+  def testSimpleLookupFails(self):
+    with self.assertRaises(Exception):
+      self.testEnv.lookup('bar')
+
+  def testEntryIsShadowed(self):
+
+    barType = Types.newFinite('Bar')
+    bar = TypedObject(barType, 'barVal')
+    modifiedEnv = self.testEnv.bind('foo', bar)
+    self.assertEquals(modifiedEnv.lookup('foo'), bar)
 
 class EvaluationTests(unittest.TestCase):
 
