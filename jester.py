@@ -161,10 +161,17 @@ class MatchTests(unittest.TestCase):
     bindings = Patterns.match(Patterns.reference('T'), type_)
     self.assertEquals(bindings, [('T', type_)])
 
-class EvaluationTests(unittest.TestCase):
+class EnvironmentTests(unittest.TestCase):
+  def testSimpleLookup(self):
 
-  def setUp(self):
-    pass
+    fooType = Types.newFinite('Foo')
+    class TestDefs(object):
+      foo = TypedObject(fooType, 'fooVal')
+
+    testEnv = Environment.fromModule(TestDefs)
+    self.assertEquals(testEnv.lookup('foo'), TestDefs.foo)
+
+class EvaluationTests(unittest.TestCase):
 
   def testEvaluateAndRunApp(self):
 
