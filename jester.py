@@ -48,8 +48,11 @@ class Environment(object):
   def lookup(self, sym):
     return Bindings.lookup(self.bindings_, sym)
 
+  def clone(self):
+    return Environment(self.bindings_)
+
   def bind(self, symbol, value):
-    return Environment(Bindings.bind(self.bindings_, symbol, value))
+    self.bindings_ = Bindings.bind(self.bindings_, symbol, value)
 
   @staticmethod
   def fromModule(mod):
@@ -188,8 +191,10 @@ class EnvironmentTests(unittest.TestCase):
 
     barType = Types.newFinite('Bar')
     bar = TypedObject(barType, 'barVal')
-    modifiedEnv = self.testEnv.bind('foo', bar)
+    modifiedEnv = self.testEnv.clone()
+    modifiedEnv.bind('foo', bar)
     self.assertEquals(modifiedEnv.lookup('foo'), bar)
+    self.assertEquals(self.testEnv.lookup('foo'), self.foo)
 
 class EvaluationTests(unittest.TestCase):
 
