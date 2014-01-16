@@ -69,14 +69,15 @@ class Types(object):
     name = stem + str(id)
     return name
 
+class Patterns(object):
   @staticmethod
   def match(expected, actual):
-    if Types.isForm(expected):
-      return Types.matchForm(expected, actual)
-    elif Types.isExpectation(expected):
-      return Types.matchExpectation(expected, actual)
-    elif Types.isReference(expected):
-      return Types.matchReference(expected, actual)
+    if Patterns.isForm(expected):
+      return Patterns.matchForm(expected, actual)
+    elif Patterns.isExpectation(expected):
+      return Patterns.matchExpectation(expected, actual)
+    elif Patterns.isReference(expected):
+      return Patterns.matchReference(expected, actual)
     else:
       asdf
 
@@ -86,35 +87,26 @@ class Types(object):
 
   @staticmethod
   def isExpectation(expected):
-    return type(expected) == Expected
+    return type(expected) == str
+
+  @staticmethod
+  def reference(name):
+    return (name,)
 
   @staticmethod
   def isReference(expected):
-    return type(expected) == Reference
+    return type(expected) == tuple
 
   @staticmethod
   def matchExpectation(expected, actual):
-    if expected.actual == actual:
+    if expected == actual:
       return []
     else:
       return None
 
   @staticmethod
   def matchReference(expected, actual):
-    return [expected.name, actual]
-
-class Expected(object):
-  def __init__(self, type_):
-    self.type_ = type_
-
-class Universal(object):
-  def __init__(self, vars_, body):
-    self.vars = vars_
-    self.body = body
-
-class Reference(object):
-  def __init__(self, name):
-    self.name = name
+    return [(expected[0], actual)]
 
 class TypeDefs(object):
   def __type(type_):
@@ -152,21 +144,21 @@ def app():
   e = Edsl
   return e.dummyApp
 
-class UnificationTests(unittest.TestCase):
-  def testUnifySimpleTypeSucceeds(self):
+class MatchTests(unittest.TestCase):
+  def testMatchSimpleTypeSucceeds(self):
     type_ = Types.newFinite('Foo')
-    bindings = Types.match(Expected(type_), type_)
+    bindings = Patterns.match(type_, type_)
     self.assertEquals(bindings, [])
 
-  def testUnifySimpleTypeFails(self):
+  def testMatchSimpleTypeFails(self):
     expectedType = Types.newFinite('Foo')
     actualType = Types.newFinite('Bar')
-    bindings = Types.match(Expected(expectedType), actualType)
+    bindings = Patterns.match(expectedType, actualType)
     self.assertEquals(bindings, None)
 
-  def testUnifyVarSucceeds(self):
+  def testMatchVarSucceeds(self):
     type_ = Types.newFinite('Foo')
-    bindings = Types.match(Universal(['T'], Reference(['T'])), type_)
+    bindings = Patterns.match(Patterns.reference('T'), type_)
     self.assertEquals(bindings, [('T', type_)])
 
 class EvaluationTests(unittest.TestCase):
